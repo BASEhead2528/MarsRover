@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Mars Rover</title>
+
+</head>
+
+<body>
+
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.js"></script>
+	<script>
+
+		//create grid with a few obstacles
+		//Conceptually this should be turned 90 degrees counter clock wise
+		//Outter array is X, inner arrays are Y
+		var grid = [
+			[0,0,0,0,0,0,0,0,0,1],
+			[0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,1,0,0,0],
+			[0,0,1,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,1,0,0,0,0,0],
+			[1,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,1,0,0]
+		];
+
+		var Rover = (function(){
+
+			function Rover (grid,x,y,direction) {
+				this.position = [x,y];
+				this.grid = grid;
+				this.direction = direction.toUpperCase();
+			}
+
+			function _rotateRover(rotationDirection){
+				switch(this.direction){
+					case "N":
+						this.direction = rotationDirection == "CW" ? "E" : "W";
+						break;
+					case "E":
+						this.direction = rotationDirection == "CW" ? "S" : "N";
+						break;
+					case "S":
+						this.direction = rotationDirection == "CW" ? "W" : "E";
+						break;
+					case "W":
+						this.direction = rotationDirection == "CW" ? "N" : "S";
+						break;
+					default:
+						//Throw an exception
+						break;
+				}
+			};
+
+			function _moveRover(moveDirection){
+				var x = this.position[0]
+				var y = this.position[1];
+				switch(this.direction){
+					case "N":
+						moveDirection == "f" ? y++ : y--;
+						break;
+					case "W":
+						moveDirection == "f" ? x-- : x++;
+						break;
+					case "S":
+						moveDirection == "f" ? y-- : y++;
+						break;
+					case "E":
+						moveDirection == "f" ? x++ : x--;
+						break;
+					default:
+						//Throw an exception
+						break;
+				}
+				this.position = _getCoordinatesPendingWrap.call(this,x,y);
+			}
+
+			function _isObstacle(x,y){
+				if(x < this.grid.length && x >= 0 && 
+				   y < this.grid[0].length && y >= 0){
+					if(this.grid[x][y] == 1){
+						return true
+					}
+					else{
+						return false
+					}
+				}else{
+					//do nothing, _getCoordinatesPendingWrap will handle obstacle on wrap
+				}
+			}
+
+			function _getCoordinatesPendingWrap(x,y){
+				var xMax = this.grid.length;
+				var yMax = this.grid[0].length;
+				var newX = x, newY = y;
+
+				if(x >= xMax){
+					newX = 0;
+				}else if(x < 0){
+					newX = xMax - 1;
+				}else if(y >= yMax){
+					newY = 0;
+				}else if (y < 0){
+					newY = yMax - 1;
+				}
+
+				if(!_isObstacle.call(this,newX,newY)){
+					return [newX,newY];
+				}else{
+					console.log("Obstacle detected at (" + newX + "," + newY + "). Rover at position (" +  this.position[0] + "," + this.position[1] + ").");
+					return [this.position[0],this.position[1]]
+				}
+			}
+
+			function _getPosition(){
+				return this.position
+			}
+
+			Rover.prototype.MoveRover = function(commands){
+				var self = this;
+				commands.forEach(function(value,index){
+					value = value.toLowerCase();
+					switch(value){
+						case "l":
+							return _rotateRover.call(self,"CCW");
+						case "r":
+							return _rotateRover.call(self,"CW");
+						case "f":
+							return _moveRover.call(self,"f");
+						case "b":
+							return _moveRover.call(self,"b");
+						default:
+							return "Received invalid move characters";
+					}
+				});
+			};
+
+			Rover.prototype.GetPosition = function(){
+				return _getPosition.call(this)
+			};
+			return Rover;
+		})();
+
+		// ////////////////////////////////////////////////////////
+		// End API, Begin using
+		// ///////////////////////////////////////////////////////
+
+		var rover1 = new Rover(grid,4,4,"N");
+
+		rover1.MoveRover(["f","f","r","f","f","r","f","f"]);
+		console.log(rover1.GetPosition());
+
+		var rover2 = new Rover(grid,0,0,"N");
+
+		rover2.MoveRover(["r","f","r","f","f","r","f","f","r","f"]);
+		console.log(rover2.GetPosition());
+
+		var rover3 = new Rover(grid,4,0,"N");
+
+		rover3.MoveRover(["f","f","f","l","b","b","b","l","f","f","f"])
+		console.log(rover3.GetPosition());
+
+	</script>
+</body>
+
+</html>
