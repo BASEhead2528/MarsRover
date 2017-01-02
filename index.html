@@ -28,26 +28,28 @@
 		];
 
 		var Rover = (function(){
+			var _position, _grid, _direction;
+
 
 			function Rover (grid,x,y,direction) {
-				this.position = [x,y];
-				this.grid = grid;
-				this.direction = direction.toUpperCase();
+				_position = [x,y];
+				_grid = grid;
+				_direction = direction.toUpperCase();
 			}
 
 			function _rotateRover(rotationDirection){
-				switch(this.direction){
+				switch(_direction){
 					case "N":
-						this.direction = rotationDirection == "CW" ? "E" : "W";
+						_direction = rotationDirection == "CW" ? "E" : "W";
 						break;
 					case "E":
-						this.direction = rotationDirection == "CW" ? "S" : "N";
+						_direction = rotationDirection == "CW" ? "S" : "N";
 						break;
 					case "S":
-						this.direction = rotationDirection == "CW" ? "W" : "E";
+						_direction = rotationDirection == "CW" ? "W" : "E";
 						break;
 					case "W":
-						this.direction = rotationDirection == "CW" ? "N" : "S";
+						_direction = rotationDirection == "CW" ? "N" : "S";
 						break;
 					default:
 						//Throw an exception
@@ -56,9 +58,9 @@
 			};
 
 			function _moveRover(moveDirection){
-				var x = this.position[0]
-				var y = this.position[1];
-				switch(this.direction){
+				var x = _position[0]
+				var y = _position[1];
+				switch(_direction){
 					case "N":
 						moveDirection == "f" ? y++ : y--;
 						break;
@@ -75,13 +77,13 @@
 						//Throw an exception
 						break;
 				}
-				this.position = _getCoordinatesPendingWrap.call(this,x,y);
+				_position = _getCoordinatesPendingWrap(x,y);
 			}
 
 			function _isObstacle(x,y){
-				if(x < this.grid.length && x >= 0 && 
-				   y < this.grid[0].length && y >= 0){
-					if(this.grid[x][y] == 1){
+				if(x < _grid.length && x >= 0 && 
+				   y < _grid[0].length && y >= 0){
+					if(_grid[x][y] == 1){
 						return true
 					}
 					else{
@@ -93,8 +95,8 @@
 			}
 
 			function _getCoordinatesPendingWrap(x,y){
-				var xMax = this.grid.length;
-				var yMax = this.grid[0].length;
+				var xMax = _grid.length;
+				var yMax = _grid[0].length;
 				var newX = x, newY = y;
 
 				if(x >= xMax){
@@ -107,31 +109,26 @@
 					newY = yMax - 1;
 				}
 
-				if(!_isObstacle.call(this,newX,newY)){
+				if(!_isObstacle(newX,newY)){
 					return [newX,newY];
 				}else{
-					console.log("Obstacle detected at (" + newX + "," + newY + "). Rover at position (" +  this.position[0] + "," + this.position[1] + ").");
-					return [this.position[0],this.position[1]]
+					console.log("Obstacle detected at (" + newX + "," + newY + "). Rover at position (" +  _position[0] + "," + _position[1] + ").");
+					return [_position[0],_position[1]]
 				}
 			}
 
-			function _getPosition(){
-				return this.position
-			}
-
 			Rover.prototype.MoveRover = function(commands){
-				var self = this;
 				commands.forEach(function(value,index){
 					value = value.toLowerCase();
 					switch(value){
 						case "l":
-							return _rotateRover.call(self,"CCW");
+							return _rotateRover("CCW");
 						case "r":
-							return _rotateRover.call(self,"CW");
+							return _rotateRover("CW");
 						case "f":
-							return _moveRover.call(self,"f");
+							return _moveRover("f");
 						case "b":
-							return _moveRover.call(self,"b");
+							return _moveRover("b");
 						default:
 							return "Received invalid move characters";
 					}
@@ -139,8 +136,9 @@
 			};
 
 			Rover.prototype.GetPosition = function(){
-				return _getPosition.call(this)
-			};
+				return _position
+			}
+
 			return Rover;
 		})();
 
